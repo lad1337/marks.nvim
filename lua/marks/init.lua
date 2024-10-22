@@ -249,6 +249,7 @@ function M.setup(config)
     preview_mappings = M.preview_mappings
   end
   M.mark_state.opt.preview_mappings = preview_mappings
+  M.mark_state.opt.preview_size = utils.option_nil(config.preview_size, { 0.5, 0.5 })
 
   M.mark_state.opt.priority = { 10, 10, 10 }
   local mark_priority = M.mark_state.opt.priority

@@ -252,20 +252,22 @@ function Mark:preview_mark()
 
   local width = a.nvim_win_get_width(0)
   local height = a.nvim_win_get_height(0)
+  local size = self.opt.preview_size
 
   a.nvim_open_win(pos[1], true, {
     relative = "win",
     win = 0,
-    width = math.floor(width / 2),
-    height = math.floor(height / 2),
-    col = math.floor(width / 4),
-    row = math.floor(height / 8),
+    width = math.floor(width * size[1]),
+    height = math.floor(height * size[2]),
+    col = math.floor(width * (1 - size[1]) / 2),
+    row = math.floor(height * (1 - size[2]) / 2),
     border = "single"
   })
   vim.cmd("normal! `" .. mark)
   vim.cmd("normal! zz")
   for _, map in ipairs(self.opt.preview_mappings) do
-    vim.api.nvim_buf_set_keymap(pos[0], map[1], map[2], map[3], map[4] or { silent = true })
+    print(vim.inspect(map))
+    vim.api.nvim_buf_set_keymap(pos[1], map[1], map[2], map[3], map[4] or { silent = true })
   end
 end
 
@@ -277,7 +279,7 @@ function Mark:get_buf_list(bufnr)
 
   local items = {}
   for mark, data in pairs(self.buffers[bufnr].placed_marks) do
-    local text = a.nvim_buf_get_lines(bufnr, data.line-1, data.line, true)[1]
+    local text = a.nvim_buf_get_lines(bufnr, data.line - 1, data.line, true)[1]
     local path = vim.api.nvim_buf_get_name(bufnr)
     table.insert(items, {
       bufnr = bufnr,
@@ -295,7 +297,7 @@ function Mark:get_all_list()
   local items = {}
   for bufnr, buffer_state in pairs(self.buffers) do
     for mark, data in pairs(buffer_state.placed_marks) do
-      local text = a.nvim_buf_get_lines(bufnr, data.line-1, data.line, true)[1]
+      local text = a.nvim_buf_get_lines(bufnr, data.line - 1, data.line, true)[1]
       local path = vim.api.nvim_buf_get_name(bufnr)
       table.insert(items, {
         bufnr = bufnr,
