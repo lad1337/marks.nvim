@@ -1,6 +1,6 @@
-local mark = require'marks.mark'
-local bookmark = require'marks.bookmark'
-local utils = require'marks.utils'
+local mark = require 'marks.mark'
+local bookmark = require 'marks.bookmark'
+local utils = require 'marks.utils'
 local M = {}
 
 function M.set()
@@ -106,16 +106,16 @@ function M.toggle_signs(bufnr)
     end
   else
     M.mark_state.opt.buf_signs[bufnr] = not utils.option_nil(
-        M.mark_state.opt.buf_signs[bufnr], M.mark_state.opt.signs)
+      M.mark_state.opt.buf_signs[bufnr], M.mark_state.opt.signs)
     M.bookmark_state.opt.buf_signs[bufnr] = not utils.option_nil(
-        M.bookmark_state.opt.buf_signs[bufnr], M.bookmark_state.opt.signs)
+      M.bookmark_state.opt.buf_signs[bufnr], M.bookmark_state.opt.signs)
   end
 
   M.refresh(true)
 end
 
 -- set_group[0-9] functions
-for i=0,9 do
+for i = 0, 9 do
   M["set_bookmark" .. i] = function() M.bookmark_state:place_mark(i) end
   M["toggle_bookmark" .. i] = function() M.bookmark_state:toggle_mark(i) end
   M["delete_bookmark" .. i] = function() M.bookmark_state:delete_all(i) end
@@ -150,10 +150,14 @@ M.mappings = {
   delete_buf = "dm<space>"
 }
 
-for i=0,9 do
-  M.mappings["set_bookmark" .. i] = "m"..tostring(i)
-  M.mappings["delete_bookmark" .. i] = "dm"..tostring(i)
+for i = 0, 9 do
+  M.mappings["set_bookmark" .. i] = "m" .. tostring(i)
+  M.mappings["delete_bookmark" .. i] = "dm" .. tostring(i)
 end
+
+M.preview_mappings = {
+  { 'n', 'q', ':bd<CR>' }
+}
 
 local function user_mappings(config)
   for cmd, key in pairs(config.mappings) do
@@ -167,7 +171,7 @@ end
 
 local function apply_mappings()
   for cmd, key in pairs(M.mappings) do
-    vim.cmd("nnoremap <silent> "..key.." <cmd>lua require'marks'."..cmd.."()<cr>")
+    vim.cmd("nnoremap <silent> " .. key .. " <cmd>lua require'marks'." .. cmd .. "()<cr>")
   end
 end
 
@@ -198,7 +202,7 @@ function M.setup(config)
   M.bookmark_state = bookmark.new()
 
   local bookmark_config
-  for i=0,9 do
+  for i = 0, 9 do
     bookmark_config = config["bookmark_" .. i]
     if bookmark_config then
       if bookmark_config.sign == false then
@@ -237,6 +241,14 @@ function M.setup(config)
   M.mark_state.opt.buf_signs = {}
   M.mark_state.opt.force_write_shada = utils.option_nil(config.force_write_shada, false)
   M.mark_state.opt.cyclic = utils.option_nil(config.cyclic, true)
+
+  local preview_mappings = {}
+  if config.preview_mappings then
+    preview_mappings = M.preview_mappings
+  else if config.default_preview_mappings then
+      preview_mappings = M.preview_mappings
+  end
+  M.mark_state.opt.preview_mappings = preview_mappings
 
   M.mark_state.opt.priority = { 10, 10, 10 }
   local mark_priority = M.mark_state.opt.priority

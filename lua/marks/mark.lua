@@ -1,5 +1,5 @@
 local a = vim.api
-local utils = require'marks.utils'
+local utils = require 'marks.utils'
 
 local Mark = {}
 
@@ -63,9 +63,11 @@ end
 function Mark:place_next_mark(line, col)
   local bufnr = a.nvim_get_current_buf()
   if not self.buffers[bufnr] then
-    self.buffers[bufnr] = {placed_marks = {},
-                           marks_by_line = {},
-                           lowest_available_mark = "a" }
+    self.buffers[bufnr] = {
+      placed_marks = {},
+      marks_by_line = {},
+      lowest_available_mark = "a"
+    }
   end
 
   local mark = self.buffers[bufnr].lowest_available_mark
@@ -153,9 +155,11 @@ end
 function Mark:delete_buf_marks(clear)
   clear = utils.option_nil(clear, true)
   local bufnr = a.nvim_get_current_buf()
-  self.buffers[bufnr] = { placed_marks = {},
-                          marks_by_line = {},
-                          lowest_available_mark = "a" }
+  self.buffers[bufnr] = {
+    placed_marks = {},
+    marks_by_line = {},
+    lowest_available_mark = "a"
+  }
 
   utils.remove_buf_signs(bufnr)
   if clear then
@@ -186,7 +190,7 @@ function Mark:next_mark()
     return x.line > y.line
   end
 
-  local next = utils.search(marks, {line=line}, {line=math.huge}, comparator, self.opt.cyclic)
+  local next = utils.search(marks, { line = line }, { line = math.huge }, comparator, self.opt.cyclic)
 
   if next then
     a.nvim_win_set_cursor(0, { next.line, next.col })
@@ -215,15 +219,15 @@ function Mark:prev_mark()
   local function comparator(x, y, _)
     return x.line < y.line
   end
-  local prev = utils.search(marks, {line=line}, {line=-1}, comparator, self.opt.cyclic)
+  local prev = utils.search(marks, { line = line }, { line = -1 }, comparator, self.opt.cyclic)
 
   if prev then
     a.nvim_win_set_cursor(0, { prev.line, prev.col })
   end
 end
 
-function Mark.preview_mark()
-  a.nvim_echo({{"press letter mark to preview, or press <esc> to quit"}}, true, {})
+function Mark:preview_mark()
+  a.nvim_echo({ { "press letter mark to preview, or press <esc> to quit" } }, true, {})
   local mark = vim.fn.getchar()
   if mark == 27 then -- <esc>
     return
@@ -233,7 +237,7 @@ function Mark.preview_mark()
 
   -- clear cmdline
   vim.defer_fn(function()
-    a.nvim_echo({{""}}, false, {})
+    a.nvim_echo({ { "" } }, false, {})
   end, 100)
 
   if not mark then
@@ -250,16 +254,19 @@ function Mark.preview_mark()
   local height = a.nvim_win_get_height(0)
 
   a.nvim_open_win(pos[1], true, {
-      relative = "win",
-      win = 0,
-      width = math.floor(width / 2),
-      height = math.floor(height / 2),
-      col = math.floor(width / 4),
-      row = math.floor(height / 8),
-      border = "single"
-    })
+    relative = "win",
+    win = 0,
+    width = math.floor(width / 2),
+    height = math.floor(height / 2),
+    col = math.floor(width / 4),
+    row = math.floor(height / 8),
+    border = "single"
+  })
   vim.cmd("normal! `" .. mark)
   vim.cmd("normal! zz")
+  for _, map in ipairs(self.opt.preview_mappings) do
+    vim.api.nvim_buf_set_keymap(pos[0], map[1], map[2], map[3], map[4] or { silent = true })
+  end
 end
 
 function Mark:buffer_to_list(list_type, bufnr)
@@ -274,9 +281,13 @@ function Mark:buffer_to_list(list_type, bufnr)
 
   local items = {}
   for mark, data in pairs(self.buffers[bufnr].placed_marks) do
-    local text = a.nvim_buf_get_lines(bufnr, data.line-1, data.line, true)[1]
-    table.insert(items, { bufnr = bufnr, lnum = data.line, col = data.col + 1,
-        text = "mark " .. mark .. ": " .. text})
+    local text = a.nvim_buf_get_lines(bufnr, data.line - 1, data.line, true)[1]
+    table.insert(items, {
+      bufnr = bufnr,
+      lnum = data.line,
+      col = data.col + 1,
+      text = "mark " .. mark .. ": " .. text
+    })
   end
 
   list_fn(items, "r")
@@ -290,9 +301,13 @@ function Mark:all_to_list(list_type)
   local items = {}
   for bufnr, buffer_state in pairs(self.buffers) do
     for mark, data in pairs(buffer_state.placed_marks) do
-      local text = a.nvim_buf_get_lines(bufnr, data.line-1, data.line, true)[1]
-      table.insert(items, { bufnr = bufnr, lnum = data.line, col = data.col + 1,
-          text = "mark " .. mark .. ": " .. text})
+      local text = a.nvim_buf_get_lines(bufnr, data.line - 1, data.line, true)[1]
+      table.insert(items, {
+        bufnr = bufnr,
+        lnum = data.line,
+        col = data.col + 1,
+        text = "mark " .. mark .. ": " .. text
+      })
     end
   end
 
@@ -308,9 +323,13 @@ function Mark:global_to_list(list_type)
   for bufnr, buffer_state in pairs(self.buffers) do
     for mark, data in pairs(buffer_state.placed_marks) do
       if utils.is_upper(mark) then
-        local text = a.nvim_buf_get_lines(bufnr, data.line-1, data.line, true)[1]
-        table.insert(items, { bufnr = bufnr, lnum = data.line, col = data.col + 1,
-            text = "mark " .. mark .. ": " .. text})
+        local text = a.nvim_buf_get_lines(bufnr, data.line - 1, data.line, true)[1]
+        table.insert(items, {
+          bufnr = bufnr,
+          lnum = data.line,
+          col = data.col + 1,
+          text = "mark " .. mark .. ": " .. text
+        })
       end
     end
   end
@@ -323,9 +342,11 @@ function Mark:refresh(bufnr, force)
   bufnr = bufnr or a.nvim_get_current_buf()
 
   if not self.buffers[bufnr] then
-    self.buffers[bufnr] = { placed_marks = {},
-                            marks_by_line = {},
-                            lowest_available_mark = "a" }
+    self.buffers[bufnr] = {
+      placed_marks = {},
+      marks_by_line = {},
+      lowest_available_mark = "a"
+    }
   end
 
   -- first, remove all marks that were deleted
@@ -341,12 +362,12 @@ function Mark:refresh(bufnr, force)
 
   -- uppercase marks
   for _, data in ipairs(vim.fn.getmarklist()) do
-    mark = data.mark:sub(2,3)
+    mark = data.mark:sub(2, 3)
     pos = data.pos
     cached_mark = self.buffers[bufnr].placed_marks[mark]
 
     if utils.is_upper(mark) and pos[1] == bufnr and (force or not cached_mark or
-        pos[2] ~= cached_mark.line) then
+          pos[2] ~= cached_mark.line) then
       self:register_mark(mark, pos[2], pos[3], bufnr)
     end
   end
@@ -358,7 +379,7 @@ function Mark:refresh(bufnr, force)
     cached_mark = self.buffers[bufnr].placed_marks[mark]
 
     if utils.is_lower(mark) and (force or not cached_mark or
-        pos[2] ~= cached_mark.line) then
+          pos[2] ~= cached_mark.line) then
       self:register_mark(mark, pos[2], pos[3], bufnr)
     end
   end
@@ -373,7 +394,7 @@ function Mark:refresh(bufnr, force)
     -- force is true, or first time seeing mark, or mark line position has changed
     if (pos[1] == 0 or pos[1] == bufnr) and pos[2] ~= 0 and
         (force or not cached_mark or
-         pos[2] ~= cached_mark.line) then
+          pos[2] ~= cached_mark.line) then
       self:register_mark(char, pos[2], pos[3], bufnr)
     end
   end
