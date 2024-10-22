@@ -150,10 +150,10 @@ M.mappings = {
   delete_buf = "dm<space>"
 }
 
-for i = 0, 9 do
-  M.mappings["set_bookmark" .. i] = "m" .. tostring(i)
-  M.mappings["delete_bookmark" .. i] = "dm" .. tostring(i)
-end
+-- for i = 0, 9 do
+--   M.mappings["set_bookmark" .. i] = "m" .. tostring(i)
+--   M.mappings["delete_bookmark" .. i] = "dm" .. tostring(i)
+-- end
 
 M.preview_mappings = {
   { 'n', 'q', ':bd<CR>' }
