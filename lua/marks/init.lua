@@ -171,7 +171,7 @@ end
 
 local function apply_mappings()
   for cmd, key in pairs(M.mappings) do
-    vim.cmd("nnoremap <silent> " .. key .. " <cmd>lua require'marks'." .. cmd .. "()<cr>")
+    vim.api.nvim_set_keymap("n", key, "", { callback = M[cmd], desc = "marks: " .. cmd:gsub("_", " ") })
   end
 end
 
@@ -245,8 +245,8 @@ function M.setup(config)
   local preview_mappings = {}
   if config.preview_mappings then
     preview_mappings = M.preview_mappings
-  else if config.default_preview_mappings then
-      preview_mappings = M.preview_mappings
+  elseif config.default_preview_mappings then
+    preview_mappings = M.preview_mappings
   end
   M.mark_state.opt.preview_mappings = preview_mappings
 
