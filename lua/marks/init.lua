@@ -265,6 +265,7 @@ function M.setup(config)
     mark_priority[3] = config.sign_priority
     M.bookmark_state.priority = config.sign_priority
   end
+  M.mark_state.opt.priority = mark_priority
 end
 
 return M
